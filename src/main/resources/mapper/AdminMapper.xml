@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.bs_lingxin.mapper.AdminMapper">
+
+    <!-- 定义公共字段片段 -->
+    <sql id="adminCommonColumn">
+        id, username, password, status, is_deleted, create_time, update_time
+    </sql>
+
+
+    <!-- Offset多条件分页查询，先过滤再分页 -->
+    <select id="selectAdminPageOffset" resultType="org.example.bs_lingxin.entity.Admin">
+        SELECT <include refid="adminCommonColumn"/>
+        FROM admin
+        <where>
+            <if test="dto.isDeleted != null">
+                is_deleted = #{dto.isDeleted}
+            </if>
+            <if test="dto.username != null and dto.username != ''">
+                AND username = #{dto.username}
+            </if>
+            <if test="dto.usernameLike != null and dto.usernameLike != ''">
+                AND username LIKE CONCAT('%',#{dto.usernameLike},'%')
+            </if>
+            <if test="dto.realNameLike != null and dto.realNameLike != ''">
+                AND real_name LIKE CONCAT('%',#{dto.realNameLike},'%')
+            </if>
+            <if test="dto.phone != null and dto.phone != ''">
+                AND phone = #{dto.phone}
+            </if>
+            <if test="dto.status != null">
+                AND status = #{dto.status}
+            </if>
+            <if test="dto.roleId != null">
+                AND role_id = #{dto.roleId}
+            </if>
+            <if test="dto.createTimeStart != null">
+                AND create_time &gt;= #{dto.createTimeStart}
+            </if>
+            <if test="dto.createTimeEnd != null">
+                AND create_time &lt;= #{dto.createTimeEnd}
+            </if>
+            <if test="dto.lastLoginTimeStart != null">
+                AND last_login_time &gt;= #{dto.lastLoginTimeStart}
+            </if>
+            <if test="dto.lastLoginTimeEnd != null">
+                AND last_login_time &lt;= #{dto.lastLoginTimeEnd}
+            </if>
+        </where>
+        ORDER BY id ASC
+        LIMIT #{offset}, #{dto.size}
+    </select>
+
+    <!-- 查询筛选后的总条数 -->
+    <select id="selectAdminCount" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM admin
+        <where>
+            <if test="dto.isDeleted != null">
+                is_deleted = #{dto.isDeleted}
+            </if>
+            <if test="dto.username != null and dto.username != ''">
+                AND username = #{dto.username}
+            </if>
+            <if test="dto.usernameLike != null and dto.usernameLike != ''">
+                AND username LIKE CONCAT('%',#{dto.usernameLike},'%')
+            </if>
+            <if test="dto.realNameLike != null and dto.realNameLike != ''">
+                AND real_name LIKE CONCAT('%',#{dto.realNameLike},'%')
+            </if>
+            <if test="dto.phone != null and dto.phone != ''">
+                AND phone = #{dto.phone}
+            </if>
+            <if test="dto.status != null">
+                AND status = #{dto.status}
+            </if>
+            <if test="dto.roleId != null">
+                AND role_id = #{dto.roleId}
+            </if>
+            <if test="dto.createTimeStart != null">
+                AND create_time &gt;= #{dto.createTimeStart}
+            </if>
+            <if test="dto.createTimeEnd != null">
+                AND create_time &lt;= #{dto.createTimeEnd}
+            </if>
+            <if test="dto.lastLoginTimeStart != null">
+                AND last_login_time &gt;= #{dto.lastLoginTimeStart}
+            </if>
+            <if test="dto.lastLoginTimeEnd != null">
+                AND last_login_time &lt;= #{dto.lastLoginTimeEnd}
+            </if>
+        </where>
+    </select>
+
+
+    <!--多条件查询单条记录 getOne接口使用-->
+    <select id="selectAdminOneByDto" resultType="org.example.bs_lingxin.entity.Admin">
+        SELECT
+        <include refid="adminCommonColumn"/>
+        FROM admin
+        <where>
+            <if test="dto.isDeleted != null">
+                is_deleted = #{dto.isDeleted}
+            </if>
+            <if test="dto.username != null and dto.username != ''">
+                username = #{dto.username}
+            </if>
+            <if test="dto.usernameLike != null and dto.usernameLike != ''">
+                AND username LIKE CONCAT('%',#{dto.usernameLike},'%')
+            </if>
+            <if test="dto.realNameLike != null and dto.realNameLike != ''">
+                AND real_name LIKE CONCAT('%',#{dto.realNameLike},'%')
+            </if>
+            <if test="dto.phone != null and dto.phone != ''">
+                AND phone = #{dto.phone}
+            </if>
+            <if test="dto.status != null">
+                AND status = #{dto.status}
+            </if>
+            <if test="dto.roleId != null">
+                AND role_id = #{dto.roleId}
+            </if>
+            <if test="dto.createTimeStart != null">
+                AND create_time &gt;= #{dto.createTimeStart}
+            </if>
+            <if test="dto.createTimeEnd != null">
+                AND create_time &lt;= #{dto.createTimeEnd}
+            </if>
+            <if test="dto.lastLoginTimeStart != null">
+                AND last_login_time &gt;= #{dto.lastLoginTimeStart}
+            </if>
+            <if test="dto.lastLoginTimeEnd != null">
+                AND last_login_time &lt;= #{dto.lastLoginTimeEnd}
+            </if>
+        </where>
+        LIMIT 1
+    </select>
+
+    <!-- 修改管理员 -->
+    <update id="updateAdmin" parameterType="org.example.bs_lingxin.entity.Admin">
+        UPDATE admin
+        <set>
+            <if test="username != null">
+                username = #{username},
+            </if>
+            <if test="password != null">
+                password = #{password},
+            </if>
+            <if test="realName != null">
+                real_name = #{realName},
+            </if>
+            <if test="phone != null">
+                phone = #{phone},
+            </if>
+            <if test="email != null">
+                email = #{email},
+            </if>
+            <if test="avatar != null">
+                avatar = #{avatar},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="roleId != null">
+                role_id = #{roleId},
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+
+</mapper>

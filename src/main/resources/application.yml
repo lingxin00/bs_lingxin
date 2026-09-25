@@ -13,3 +13,11 @@ mybatis-plus:
       logic-delete-field: isDeleted
       logic-delete-value: 1
       logic-not-delete-value: 0
+
+sa-token:
+  token-name: lingxin          # 请求头携带的key，前端headers['satoken']
+  token-style: simple‑uuid     # token生成格式
+  timeout: 1800                # token有效期 30分钟，单位秒
+  is-concurrent: true          # 是否允许同一账号多端登录
+  is-share: false
+  active-timeout: -1

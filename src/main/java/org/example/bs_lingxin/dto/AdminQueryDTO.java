@@ -1,31 +1,33 @@
 package org.example.bs_lingxin.dto;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
+/**
+ * 管理员查询条件DTO
+ */
 @Data
-@EqualsAndHashCode(callSuper = true) // equals、hashCode带上父类字段
-@ToString(callSuper = true)         // toString打印带上父类字段
-public class AdminPageQueryDTO extends BasePageQueryDTO implements Serializable {
+public class AdminQueryDTO implements Serializable {
     @Serial
-    private static final long serialVersionUID = 1L; //版本号
+    private static final long serialVersionUID = 1L;
+
+    //精确用户名
     private String username;
-    private Integer status;
-    //新增逻辑删除参数：0未删，1已删，null全部
-    private Integer isDeleted;
     //用户名模糊
     private String usernameLike;
     //真实姓名模糊
     private String realNameLike;
     //手机号精确
     private String phone;
+    //状态 0禁用 1正常
+    private Integer status;
     //角色id
     private Long roleId;
+    //逻辑删除：0未删，1已删，null全部
+    private Integer isDeleted;
 
     //可选时间范围筛选
     private LocalDateTime createTimeStart;
