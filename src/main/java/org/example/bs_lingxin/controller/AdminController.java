@@ -2,6 +2,8 @@ package org.example.bs_lingxin.controller;
 
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.example.bs_lingxin.common.Result;
@@ -13,23 +15,26 @@ import org.example.bs_lingxin.entity.Admin;
 import org.example.bs_lingxin.mapper.AdminMapper;
 import org.example.bs_lingxin.service.AdminService;
 import org.example.bs_lingxin.vo.AdminLoginVO;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @RestController
-@RequestMapping("/admin")
+@RequestMapping("/api/admin")
 public class AdminController {
 
     private final AdminService adminService;
     private final AdminMapper adminMapper;
+    private final StringRedisTemplate stringRedisTemplate;
 
-    public AdminController(AdminService adminService,AdminMapper adminMapper){
+    public AdminController(AdminService adminService,AdminMapper adminMapper,StringRedisTemplate stringRedisTemplate){
         this.adminService = adminService;
         this.adminMapper=adminMapper;
+        this.stringRedisTemplate=stringRedisTemplate;
     }
 
     /**
@@ -46,7 +51,32 @@ public class AdminController {
         log.info("管理员登录成功，userId={},username={}",admin.getId(),admin.getUsername());
         StpUtil.login(admin.getId());
         SaTokenInfo tokenInfo = StpUtil.getTokenInfo();
+        AdminLoginVO adminLoginVO = new AdminLoginVO(admin, tokenInfo);
+        // Redis key：admin:online:token
+        String redisKey = "admin:online:" + tokenInfo.getTokenValue();
+        // ObjectMapper 把对象转json字符串
+        ObjectMapper objectMapper = new ObjectMapper();
+        String json;
+        try {
+            json = objectMapper.writeValueAsString(adminLoginVO);
+        } catch (JsonProcessingException e) {
+            log.error("序列化在线管理员VO失败", e);
+            return Result.fail(400,"登录异常");
+        }
+        stringRedisTemplate.opsForValue().set(redisKey,json,tokenInfo.getTokenTimeout(), TimeUnit.SECONDS);
         return Result.success(new AdminLoginVO(admin,tokenInfo));
+    }
+
+    /**
+     * 管理员退出
+     * */
+    @PostMapping("/logout")
+    public Result<?> logout() {
+        String token = StpUtil.getTokenValue();
+        String redisKey = "admin:online:" + token;
+        stringRedisTemplate.delete(redisKey);
+        StpUtil.logout();
+        return Result.success();
     }
 
     /**

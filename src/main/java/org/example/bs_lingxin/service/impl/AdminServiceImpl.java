@@ -112,6 +112,10 @@ public class AdminServiceImpl implements AdminService {
      * */
     @Override
     public void updateAdmin(AdminSaveDTO adminSaveDTO) {
+        Admin admin1 = adminMapper.selectId(adminSaveDTO.getId());
+        if (admin1 == null){
+            throw new BusinessException("当前用户不存在");
+        }
         Admin admin = new Admin();
         BeanUtils.copyProperties(adminSaveDTO, admin);      //复制adminSaveDTO到admin
         // 修改：密码不为空才加密更新；null/空串不修改密码

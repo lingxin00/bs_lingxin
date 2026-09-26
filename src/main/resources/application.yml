@@ -15,9 +15,9 @@ mybatis-plus:
       logic-not-delete-value: 0
 
 sa-token:
-  token-name: lingxin          # 请求头携带的key，前端headers['satoken']
+  token-name: lingxin          # 请求头携带的key，前端headers['lingxin']
   token-style: simple‑uuid     # token生成格式
-  timeout: 1800                # token有效期 30分钟，单位秒
+  timeout: 2592000             # token有效期 30天，单位秒
   is-concurrent: true          # 是否允许同一账号多端登录
-  is-share: false
-  active-timeout: -1
+  is-share: false              # 每次登录生成全新token，不共用token
+  active-timeout: 1800         #闲置超时：连续30分钟没有请求，token失效；有请求自动续30分钟

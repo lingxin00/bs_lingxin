@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.bs_lingxin.mapper.RoleMapper">
+
+    <!-- Offset多条件分页查询，先过滤再分页 -->
+    <select id="selectRolePageOffset" resultType="org.example.bs_lingxin.entity.Role">
+        SELECT *
+        FROM admin
+        <where>
+            <if test="dto.isDeleted != null">
+                is_deleted = #{dto.isDeleted}
+            </if>
+            <if test="dto.roleName != null and dto.roleName != ''">
+                AND roleName = #{dto.roleName}
+            </if>
+            <if test="dto.roleNameLike != null and dto.roleNameLike != ''">
+                AND roleName LIKE CONCAT('%',#{dto.roleNameLike},'%')
+            </if>
+            <if test="dto.roleCode != null and dto.roleCode != ''">
+                AND roleCode = #{roleCode}
+            </if>
+            <if test="dto.description != null and dto.description != ''">
+                AND description LIKE CONCAT('%',#{description},'%')
+            </if>
+            <if test="dto.status != null">
+                AND status = #{dto.status}
+            </if>
+            <if test="dto.createTimeStart != null">
+                AND create_time &gt;= #{dto.createTimeStart}
+            </if>
+            <if test="dto.createTimeEnd != null">
+                AND create_time &lt;= #{dto.createTimeEnd}
+            </if>
+        </where>
+        ORDER BY id ASC
+        LIMIT #{offset}, #{dto.size}
+    </select>
+
+    <!-- 查询筛选后的总条数 -->
+    <select id="selectRoleCount" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM admin
+        <where>
+            <if test="dto.isDeleted != null">
+                is_deleted = #{dto.isDeleted}
+            </if>
+            <if test="dto.roleName != null and dto.roleName != ''">
+                AND roleName = #{dto.roleName}
+            </if>
+            <if test="dto.roleNameLike != null and dto.roleNameLike != ''">
+                AND roleName LIKE CONCAT('%',#{dto.roleNameLike},'%')
+            </if>
+            <if test="dto.roleCode != null and dto.roleCode != ''">
+                AND roleCode = #{roleCode}
+            </if>
+            <if test="dto.description != null and dto.description != ''">
+                AND description LIKE CONCAT('%',#{description},'%')
+            </if>
+            <if test="dto.status != null">
+                AND status = #{dto.status}
+            </if>
+            <if test="dto.createTimeStart != null">
+                AND create_time &gt;= #{dto.createTimeStart}
+            </if>
+            <if test="dto.createTimeEnd != null">
+                AND create_time &lt;= #{dto.createTimeEnd}
+            </if>
+        </where>
+    </select>
+
+    <!--多条件查询单条记录 getOne接口使用-->
+    <select id="selectRoleOneByDto" resultType="org.example.bs_lingxin.entity.Role">
+        SELECT
+        <include refid="adminCommonColumn"/>
+        FROM admin
+        <where>
+            <if test="dto.isDeleted != null">
+                is_deleted = #{dto.isDeleted}
+            </if>
+            <if test="dto.roleName != null and dto.roleName != ''">
+                AND roleName = #{dto.roleName}
+            </if>
+            <if test="dto.roleNameLike != null and dto.roleNameLike != ''">
+                AND roleName LIKE CONCAT('%',#{dto.roleNameLike},'%')
+            </if>
+            <if test="dto.roleCode != null and dto.roleCode != ''">
+                AND roleCode = #{roleCode}
+            </if>
+            <if test="dto.description != null and dto.description != ''">
+                AND description LIKE CONCAT('%',#{description},'%')
+            </if>
+            <if test="dto.status != null">
+                AND status = #{dto.status}
+            </if>
+            <if test="dto.createTimeStart != null">
+                AND create_time &gt;= #{dto.createTimeStart}
+            </if>
+            <if test="dto.createTimeEnd != null">
+                AND create_time &lt;= #{dto.createTimeEnd}
+            </if>
+        </where>
+        LIMIT 1
+    </select>
+
+    <!-- 修改角色 -->
+    <update id="updateRole" parameterType="org.example.bs_lingxin.entity.Role">
+        UPDATE admin
+        <set>
+            <if test="roleName != null">
+                roleName = #{roleName},
+            </if>
+            <if test="roleCode != null">
+                roleCode = #{roleCode},
+            </if>
+            <if test="description != null">
+                description = #{description},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+
+
+
+
+
+
+</mapper>
