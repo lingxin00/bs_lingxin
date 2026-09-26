@@ -6,22 +6,22 @@
     <!-- Offset多条件分页查询，先过滤再分页 -->
     <select id="selectRolePageOffset" resultType="org.example.bs_lingxin.entity.Role">
         SELECT *
-        FROM admin
+        FROM Role
         <where>
             <if test="dto.isDeleted != null">
                 is_deleted = #{dto.isDeleted}
             </if>
             <if test="dto.roleName != null and dto.roleName != ''">
-                AND roleName = #{dto.roleName}
+                AND role_name = #{dto.roleName}
             </if>
             <if test="dto.roleNameLike != null and dto.roleNameLike != ''">
-                AND roleName LIKE CONCAT('%',#{dto.roleNameLike},'%')
+                AND role_name LIKE CONCAT('%',#{dto.roleNameLike},'%')
             </if>
             <if test="dto.roleCode != null and dto.roleCode != ''">
-                AND roleCode = #{roleCode}
+                AND role_code = #{dto.roleCode}
             </if>
             <if test="dto.description != null and dto.description != ''">
-                AND description LIKE CONCAT('%',#{description},'%')
+                AND description LIKE CONCAT('%',#{dto.description},'%')
             </if>
             <if test="dto.status != null">
                 AND status = #{dto.status}
@@ -40,22 +40,22 @@
     <!-- 查询筛选后的总条数 -->
     <select id="selectRoleCount" resultType="java.lang.Long">
         SELECT COUNT(*)
-        FROM admin
+        FROM Role
         <where>
             <if test="dto.isDeleted != null">
                 is_deleted = #{dto.isDeleted}
             </if>
             <if test="dto.roleName != null and dto.roleName != ''">
-                AND roleName = #{dto.roleName}
+                AND role_name = #{dto.roleName}
             </if>
             <if test="dto.roleNameLike != null and dto.roleNameLike != ''">
-                AND roleName LIKE CONCAT('%',#{dto.roleNameLike},'%')
+                AND role_name LIKE CONCAT('%',#{dto.roleNameLike},'%')
             </if>
             <if test="dto.roleCode != null and dto.roleCode != ''">
-                AND roleCode = #{roleCode}
+                AND role_code = #{dto.roleCode}
             </if>
             <if test="dto.description != null and dto.description != ''">
-                AND description LIKE CONCAT('%',#{description},'%')
+                AND description LIKE CONCAT('%',#{dto.description},'%')
             </if>
             <if test="dto.status != null">
                 AND status = #{dto.status}
@@ -71,24 +71,23 @@
 
     <!--多条件查询单条记录 getOne接口使用-->
     <select id="selectRoleOneByDto" resultType="org.example.bs_lingxin.entity.Role">
-        SELECT
-        <include refid="adminCommonColumn"/>
-        FROM admin
+        SELECT *
+        FROM Role
         <where>
             <if test="dto.isDeleted != null">
                 is_deleted = #{dto.isDeleted}
             </if>
             <if test="dto.roleName != null and dto.roleName != ''">
-                AND roleName = #{dto.roleName}
+                AND role_name = #{dto.roleName}
             </if>
             <if test="dto.roleNameLike != null and dto.roleNameLike != ''">
-                AND roleName LIKE CONCAT('%',#{dto.roleNameLike},'%')
+                AND role_name LIKE CONCAT('%',#{dto.roleNameLike},'%')
             </if>
             <if test="dto.roleCode != null and dto.roleCode != ''">
-                AND roleCode = #{roleCode}
+                AND role_code = #{dto.roleCode}
             </if>
             <if test="dto.description != null and dto.description != ''">
-                AND description LIKE CONCAT('%',#{description},'%')
+                AND description LIKE CONCAT('%',#{dto.description},'%')
             </if>
             <if test="dto.status != null">
                 AND status = #{dto.status}
@@ -105,23 +104,30 @@
 
     <!-- 修改角色 -->
     <update id="updateRole" parameterType="org.example.bs_lingxin.entity.Role">
-        UPDATE admin
+        UPDATE role
         <set>
-            <if test="roleName != null">
-                roleName = #{roleName},
+            <if test="isDeleted != null">
+                is_deleted = #{isDeleted},
             </if>
-            <if test="roleCode != null">
-                roleCode = #{roleCode},
+            <if test="roleName != null and roleName != ''">
+                role_name = #{roleName},
             </if>
-            <if test="description != null">
+            <if test="roleCode != null and roleCode != ''">
+                role_code = #{roleCode},
+            </if>
+            <if test="description != null and description != ''">
                 description = #{description},
             </if>
             <if test="status != null">
                 status = #{status},
             </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime}
+            </if>
         </set>
         WHERE id = #{id}
     </update>
+
 
 
 
