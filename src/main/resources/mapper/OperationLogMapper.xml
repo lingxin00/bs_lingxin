@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.bs_lingxin.mapper.OperationLogMapper">
+
+    <!-- 新增操作日志 -->
+    <insert id="insert" parameterType="org.example.bs_lingxin.entity.OperationLog"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO operation_log
+        (admin_id, operation_type, module, operation_desc,
+         request_url, request_method, request_params,
+         ip, user_agent, cost_time, create_time)
+        VALUES
+            (#{adminId}, #{operationType}, #{module}, #{operationDesc},
+             #{requestUrl}, #{requestMethod}, #{requestParams},
+             #{ip}, #{userAgent}, #{costTime}, NOW())
+    </insert>
+
+    <!-- 分页查询操作日志 -->
+    <select id="selectOperationLogPageOffset"
+            resultType="org.example.bs_lingxin.entity.OperationLog">
+        SELECT
+        id,
+        admin_id       AS adminId,
+        operation_type AS operationType,
+        module,
+        operation_desc AS operationDesc,
+        request_url    AS requestUrl,
+        request_method AS requestMethod,
+        request_params AS requestParams,
+        ip,
+        user_agent     AS userAgent,
+        cost_time      AS costTime,
+        create_time    AS createTime
+        FROM operation_log
+        <where>
+            <if test="adminId != null">
+                AND admin_id = #{adminId}
+            </if>
+            <if test="module != null and module != ''">
+                AND module = #{module}
+            </if>
+            <if test="operationType != null and operationType != ''">
+                AND operation_type = #{operationType}
+            </if>
+            <if test="operationDescLike != null and operationDescLike != ''">
+                AND operation_desc LIKE CONCAT('%', #{operationDescLike}, '%')
+            </if>
+            <if test="createTimeStart != null">
+                AND create_time &gt;= #{createTimeStart}
+            </if>
+            <if test="createTimeEnd != null">
+                AND create_time &lt;= #{createTimeEnd}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+</mapper>

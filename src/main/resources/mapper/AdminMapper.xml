@@ -5,7 +5,9 @@
 
     <!-- 定义公共字段片段 -->
     <sql id="adminCommonColumn">
-        id, username, password, status, is_deleted, create_time, update_time
+        id, username, password, real_name, phone, email, avatar,
+    status, is_deleted, last_login_time, last_login_ip,
+    create_time, update_time, role_id
     </sql>
 
 
@@ -165,6 +167,7 @@
             <if test="roleId != null">
                 role_id = #{roleId},
             </if>
+            update_time = NOW()
         </set>
         WHERE id = #{id}
     </update>

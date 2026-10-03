@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.example.bs_lingxin.common.Result;
+import org.example.bs_lingxin.config.operation;
 import org.example.bs_lingxin.dto.AdminLoginDTO;
 import org.example.bs_lingxin.dto.AdminPageQueryDTO;
 import org.example.bs_lingxin.dto.AdminQueryDTO;
@@ -82,6 +83,7 @@ public class AdminController {
     /**
      * 分页查询管理员
      * */
+    @operation(moudle = "管理员操作",type = "查询", desc = "分页查询管理员")
     @GetMapping("/page")
     public Result<?> selectPage(@Valid AdminPageQueryDTO adminPageQueryDTO){
         List<Admin> admins = adminService.selectPage(adminPageQueryDTO);
@@ -108,6 +110,7 @@ public class AdminController {
     /**
      * 查询单个管理员
      * */
+    @operation(moudle = "管理员操作",type = "查询", desc = "查询单个管理员")
     @GetMapping("/{id}")
     public Result<?> selectId(Long id){
         if (id == null || id<=0){
@@ -123,6 +126,7 @@ public class AdminController {
     /**
      * 多条件查询单条管理员
      * */
+    @operation(moudle = "管理员操作",type = "查询", desc = "多条件查询单个管理员")
     @GetMapping("/getOne")
     public Result<?> selectOne(@Valid AdminQueryDTO adminQueryDTO){
         if (adminQueryDTO == null){
@@ -138,6 +142,7 @@ public class AdminController {
     /**
      * 新增管理员
      * */
+    @operation(moudle = "管理员操作",type = "添加", desc = "添加管理员")
     @PostMapping("/add")
     public Result<?> add(@Valid AdminSaveDTO adminSaveDTO){
         if (adminSaveDTO  == null){
@@ -150,6 +155,7 @@ public class AdminController {
     /**
      *修改管理员
      * */
+    @operation(moudle = "管理员操作",type = "修改", desc = "修改管理员")
     @PutMapping("/{id}")
     public Result<?> update(@Valid AdminSaveDTO adminSaveDTO){
         if (adminSaveDTO == null){
@@ -162,6 +168,7 @@ public class AdminController {
     /**
      *逻辑删除管理员
      * */
+    @operation(moudle = "管理员操作",type = "删除", desc = "删除管理员")
     @DeleteMapping("/{id}")
     public Result<?> delete(@PathVariable Long id){
         if (id == null){

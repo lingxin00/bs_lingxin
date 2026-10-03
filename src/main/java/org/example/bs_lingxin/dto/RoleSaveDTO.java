@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Data
 public class RoleSaveDTO implements Serializable {
@@ -18,4 +19,10 @@ public class RoleSaveDTO implements Serializable {
     private String roleCode;
     private String description;
     private Integer status;
+    private Integer isDeleted;
+
+    //可选时间范围筛选
+    private LocalDateTime createTimeStart;
+    private LocalDateTime createTimeEnd;
+
 }

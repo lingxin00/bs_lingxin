@@ -30,6 +30,11 @@
         <java.version>21</java.version>
     </properties>
     <dependencies>
+        <!-- AOP切面依赖，用来@Aspect、@Around等 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
         <!--BCrypt密码加密，不使用security登录功能-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -97,6 +102,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba.fastjson2</groupId>
+            <artifactId>fastjson2</artifactId>
+            <version>2.0.32</version>
         </dependency>
 
 

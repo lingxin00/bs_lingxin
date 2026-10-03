@@ -1,10 +1,9 @@
 package org.example.bs_lingxin.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import lombok.Data;
 import java.time.LocalDateTime;
-import java.util.Map;
+
 /**
  * 操作日志实体
  * 对应数据库表 operation_log
@@ -29,8 +28,7 @@ public class OperationLog {
 
     private String requestMethod;
 
-    @TableField(typeHandler = JacksonTypeHandler.class)
-    private Map<String,Object> requestParams;
+    private String requestParams;
 
     private String ip;
 
@@ -38,6 +36,5 @@ public class OperationLog {
 
     private Integer costTime;
 
-    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 }

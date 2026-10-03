@@ -40,8 +40,8 @@ public interface AdminMapper {
     /**
      * 新增管理员，注解SQL
      */
-    @Insert("INSERT INTO admin(username,password,real_name,phone,email,avatar,status,role_id) " +
-            "VALUES(#{username},#{password},#{realName},#{phone},#{email},#{avatar},#{status},#{roleId})")
+    @Insert("INSERT INTO admin(username, password, real_name, phone, email, avatar, status, role_id, is_deleted, create_time, update_time) " +
+            "VALUES(#{username}, #{password}, #{realName}, #{phone}, #{email}, #{avatar}, #{status}, #{roleId}, 0, NOW(), NOW())")
     int insertAdmin(Admin admin);
 
     /**
@@ -52,6 +52,7 @@ public interface AdminMapper {
     /**
      * 逻辑删除：手写SQL 更新 is_deleted=1，不能用mp removeById
      */
-    @Update("UPDATE admin SET is_deleted = 1 WHERE id = #{id}")
+    @Update("UPDATE admin SET is_deleted = 1, update_time = NOW() " +
+            "WHERE id = #{id} AND is_deleted = 0")
     int logicDeleteAdmin(@Param("id") Long id);
 }

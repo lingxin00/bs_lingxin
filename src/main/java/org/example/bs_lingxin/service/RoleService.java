@@ -16,7 +16,7 @@ public interface RoleService {
 
     void addRole(RoleSaveDTO roleSaveDTO);
 
-    void updateRole(RoleSaveDTO roleSaveDTO);
+    void updateRole(Role role1);
 
     void removeRole(Long id);
 

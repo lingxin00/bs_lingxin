@@ -97,11 +97,11 @@ public class RoleController {
      *修改角色
      * */
     @PutMapping("/{id}")
-    public Result<?> update(@Valid RoleSaveDTO roleSaveDTO){
-        if (roleSaveDTO == null){
+    public Result<?> update(Role role){
+        if (role == null){
             return Result.fail();
         }
-        roleService.updateRole(roleSaveDTO);
+        roleService.updateRole(role);
         return Result.success();
     }
 

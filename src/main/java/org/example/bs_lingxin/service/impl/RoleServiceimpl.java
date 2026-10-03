@@ -84,12 +84,12 @@ public class RoleServiceimpl implements RoleService {
      * 修改角色
      * */
     @Override
-    public void updateRole(RoleSaveDTO roleSaveDTO) {
-        Role role = roleMapper.selectId(roleSaveDTO.getId());
+    public void updateRole(Role role1) {
+        Role role = roleMapper.selectId(role1.getId());
         if (role == null){
             throw new BusinessException("当前角色不存在");
         }
-        int i = roleMapper.updateRole(roleSaveDTO);
+        int i = roleMapper.updateRole(role1);
         if (i ==0){
             throw new BusinessException("修改角色失败，数据库未写入数据");
         }
