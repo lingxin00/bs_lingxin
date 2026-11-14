@@ -33,7 +33,7 @@ public class AdminServiceImpl implements AdminService {
         String password = adminLoginDTO.getPassword();
         Admin admin = adminMapper.selectByUsername(username);
         if (admin == null){
-            throw new BusinessException("账号不存在",400);
+            throw new BusinessException("账号不存在",401);
         }
         boolean ok=passwordEncoder.matches(password,admin.getPassword());   //解密 matches(前端明文,数据库密文)
         if (ok){
@@ -75,7 +75,7 @@ public class AdminServiceImpl implements AdminService {
     public Admin selectId(Long id) {
         Admin admin = adminMapper.selectId(id);
         if (admin == null){
-            throw new BusinessException("账号不存在",400);
+            throw new BusinessException("账号不存在",401);
         }
         return admin;
     }
@@ -102,7 +102,7 @@ public class AdminServiceImpl implements AdminService {
         String encodePwd = passwordEncoder.encode(adminSaveDTO.getPassword());
         admin.setPassword(encodePwd);
         int i = adminMapper.insertAdmin(admin);
-        if (i<1){
+        if (i < 1){
             throw new BusinessException("新增管理员失败，数据库未写入数据");
         }
     }

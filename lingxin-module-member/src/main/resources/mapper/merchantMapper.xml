@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.bs_lingxin.member.merchant.mapper.MerchantMapper">
+
+    <!-- 公共字段片段：不含 password，商家列表接口不返回密码哈希 -->
+    <sql id="merchantCommonColumn">
+        id, username, merchant_name, merchant_code, contact_name, contact_phone,
+        contact_email, address, logo, description, status, is_deleted,
+        create_time, update_time
+    </sql>
+
+    <!-- 公共筛选条件：分页查询和 count 共用同一份，避免两处维护不一致 -->
+    <sql id="merchantWhere">
+        <where>
+            <!-- 手写SQL不会触发MP的@TableLogic，逻辑删除必须自己过滤 -->
+            is_deleted = 0
+            <if test="dto.merchantName != null and dto.merchantName != ''">
+                AND merchant_name LIKE CONCAT('%', #{dto.merchantName}, '%')
+            </if>
+            <if test="dto.username != null and dto.username != ''">
+                AND username = #{dto.username}
+            </if>
+            <if test="dto.merchantCode != null and dto.merchantCode != ''">
+                AND merchant_code = #{dto.merchantCode}
+            </if>
+            <if test="dto.contactName != null and dto.contactName != ''">
+                AND contact_name = #{dto.contactName}
+            </if>
+            <if test="dto.contactPhone != null and dto.contactPhone != ''">
+                AND contact_phone = #{dto.contactPhone}
+            </if>
+            <if test="dto.contactEmail != null and dto.contactEmail != ''">
+                AND contact_email = #{dto.contactEmail}
+            </if>
+            <if test="dto.status != null">
+                AND status = #{dto.status}
+            </if>
+            <if test="dto.createTimeStart != null">
+                AND create_time &gt;= #{dto.createTimeStart}
+            </if>
+            <if test="dto.createTimeEnd != null">
+                AND create_time &lt;= #{dto.createTimeEnd}
+            </if>
+        </where>
+    </sql>
+
+    <!-- Offset多条件分页查询，先过滤再分页 -->
+    <select id="selectMerchantPageOffset"
+            resultType="org.example.bs_lingxin.member.merchant.entity.Merchant">
+        SELECT
+        <include refid="merchantCommonColumn"/>
+        FROM merchant
+        <include refid="merchantWhere"/>
+        ORDER BY id ASC
+        LIMIT #{offset}, #{dto.size}
+    </select>
+
+    <!-- 查询筛选后的总条数，条件与分页查询完全一致 -->
+    <select id="selectMerchantCount" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM merchant
+        <include refid="merchantWhere"/>
+    </select>
+
+</mapper>

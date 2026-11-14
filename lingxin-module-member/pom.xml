@@ -18,6 +18,11 @@
             <groupId>org.example</groupId>
             <artifactId>lingxin-common</artifactId>
         </dependency>
+        <!-- 商家登录密码校验需要 PasswordEncoder（BCrypt） -->
+        <dependency>
+            <groupId>org.example</groupId>
+            <artifactId>lingxin-framework</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-spring-boot4-starter</artifactId>
@@ -26,6 +31,10 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-redis</artifactId>
         </dependency>
     </dependencies>
 

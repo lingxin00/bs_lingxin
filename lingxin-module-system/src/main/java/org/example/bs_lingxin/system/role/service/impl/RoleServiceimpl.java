@@ -52,7 +52,7 @@ public class RoleServiceimpl implements RoleService {
     public Role selectId(Long id) {
         Role role = roleMapper.selectId(id);
         if (role == null){
-            throw new BusinessException("账号不存在",400);
+            throw new BusinessException("账号不存在",401);
         }
         return role;
     }
