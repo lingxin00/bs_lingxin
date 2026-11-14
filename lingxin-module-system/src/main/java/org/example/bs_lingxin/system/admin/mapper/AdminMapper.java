@@ -17,6 +17,15 @@ public interface AdminMapper {
     Admin selectByUsername(@Param("username") String username);
 
     /**
+     * 校验账号是否被其他管理员占用
+     *
+     * 故意不带 is_deleted = 0：唯一索引对已逻辑删除的行同样生效，
+     * 只查有效数据会漏判，最终在 insert/update 时抛 DuplicateKeyException。
+     */
+    @Select("select count(1) from admin where username = #{username} and id != #{excludeId}")
+    Long countUsernameExcludeId(@Param("username") String username, @Param("excludeId") Long excludeId);
+
+    /**
      * 查询总条数
      */
     Long selectAdminCount(@Param("dto") AdminPageQueryDTO dto);

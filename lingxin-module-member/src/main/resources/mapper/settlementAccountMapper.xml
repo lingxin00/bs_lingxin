@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.bs_lingxin.member.merchant.mapper.SettlementAccountMapper">
+
+    <!--
+        公共字段片段
+        注意：表里没有 is_deleted，不需要像 merchant 那样过滤逻辑删除
+        所有列都带 t 前缀（表别名 a），JOIN 时避免和 merchant 表同名列冲突
+    -->
+    <sql id="settlementAccountCommonColumn">
+        a.id, a.merchant_id, a.account_name, a.account_number, a.bank_name,
+        a.account_type, a.is_default, a.status, a.create_time, a.update_time
+    </sql>
+
+    <!-- 公共筛选条件：分页查询和 count 共用同一份，避免两处维护不一致 -->
+    <sql id="settlementAccountWhere">
+        <where>
+            <if test="dto.merchantId != null">
+                AND a.merchant_id = #{dto.merchantId}
+            </if>
+        </where>
+    </sql>
+
+    <!-- Offset 分页查询，LEFT JOIN 商家表带出 merchant_name -->
+    <select id="selectSettlementAccountPageOffset"
+            resultType="org.example.bs_lingxin.member.merchant.vo.SettlementAccountVO">
+        SELECT
+        <include refid="settlementAccountCommonColumn"/>,
+        m.merchant_name AS merchant_name
+        FROM settlement_account a
+        LEFT JOIN merchant m ON a.merchant_id = m.id AND m.is_deleted = 0
+        <include refid="settlementAccountWhere"/>
+        ORDER BY a.is_default DESC, a.id ASC
+        LIMIT #{offset}, #{dto.size}
+    </select>
+
+    <!-- 查询筛选后的总条数，条件与分页查询完全一致；条件只用到 a.merchant_id，不需要 JOIN -->
+    <select id="selectSettlementAccountCount" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM settlement_account a
+        <include refid="settlementAccountWhere"/>
+    </select>
+
+    <!-- 按商家ID查询全部账户，默认账户排最前 -->
+    <select id="selectByMerchantId"
+            resultType="org.example.bs_lingxin.member.merchant.vo.SettlementAccountVO">
+        SELECT
+        <include refid="settlementAccountCommonColumn"/>,
+        m.merchant_name AS merchant_name
+        FROM settlement_account a
+        LEFT JOIN merchant m ON a.merchant_id = m.id AND m.is_deleted = 0
+        WHERE a.merchant_id = #{merchantId}
+        ORDER BY a.is_default DESC, a.id ASC
+    </select>
+
+    <!-- 按主键查询详情，带出 merchant_name -->
+    <select id="selectSettlementAccountById"
+            resultType="org.example.bs_lingxin.member.merchant.vo.SettlementAccountVO">
+        SELECT
+        <include refid="settlementAccountCommonColumn"/>,
+        m.merchant_name AS merchant_name
+        FROM settlement_account a
+        LEFT JOIN merchant m ON a.merchant_id = m.id AND m.is_deleted = 0
+        WHERE a.id = #{id}
+    </select>
+
+</mapper>

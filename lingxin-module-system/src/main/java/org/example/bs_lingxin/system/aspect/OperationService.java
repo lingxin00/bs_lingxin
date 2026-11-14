@@ -12,6 +12,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.example.bs_lingxin.common.annotation.OperationRecord;
+import org.example.bs_lingxin.common.constant.LoginDevice;
 import org.example.bs_lingxin.system.operationlog.entity.OperationLog;
 import org.example.bs_lingxin.system.operationlog.service.OperationLogService;
 import org.springframework.stereotype.Component;
@@ -114,8 +115,9 @@ public class OperationService {
             operationLog.setRequestParams(serializeArgs(point.getArgs()));
         }
 
-        // 未登录或 token 失效时不能抛异常，否则整条日志丢失
-        operationLog.setAdminId(StpUtil.isLogin() ? StpUtil.getLoginIdAsLong() : null);
+        // 只有管理端登录才记 admin_id；商家/用户也共用同一个 StpUtil，
+        // 不判 device 的话会把商家 id 写成操作管理员
+        operationLog.setAdminId(currentAdminId());
         operationLog.setCostTime((int) costTime);
 
         if (error != null) {
@@ -127,6 +129,19 @@ public class OperationService {
 
         //异步保存日志
         operationLogService.saveAsync(operationLog);
+    }
+
+    /**
+     * 取当前操作的管理员ID
+     *
+     * 未登录、token 失效、或是商家/用户身份时一律返回 null，不能抛异常，
+     * 否则整条操作日志会丢失。
+     */
+    private Long currentAdminId() {
+        if (!StpUtil.isLogin()) {
+            return null;
+        }
+        return LoginDevice.ADMIN.equals(StpUtil.getLoginDevice()) ? StpUtil.getLoginIdAsLong() : null;
     }
 
     /**

@@ -2,6 +2,7 @@ package org.example.bs_lingxin.member.merchant.service;
 
 import org.example.bs_lingxin.member.merchant.dto.MerchantLoginDTO;
 import org.example.bs_lingxin.member.merchant.dto.MerchantPageQueryDTO;
+import org.example.bs_lingxin.member.merchant.dto.MerchantProfileDTO;
 import org.example.bs_lingxin.member.merchant.dto.MerchantSaveDTO;
 import org.example.bs_lingxin.member.merchant.entity.Merchant;
 
@@ -19,7 +20,9 @@ public interface MerchantService {
 
     void add(MerchantSaveDTO merchantSaveDTO);
 
-    void update(MerchantSaveDTO merchantSaveDTO);
+    void updateProfile(Long merchantId, MerchantProfileDTO merchantProfileDTO);
+
+    void updateAdmin(Long merchantId, MerchantSaveDTO merchantSaveDTO);
 
     void delect(Long id);
 }

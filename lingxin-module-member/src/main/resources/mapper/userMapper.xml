@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.bs_lingxin.member.user.mapper.UserMapper">
+
+    <!--
+        公共字段片段：刻意不含 password
+        后台用户列表接口不需要密码哈希，少查一列就少一份泄露风险
+    -->
+    <sql id="userCommonColumn">
+        id, username, phone, email, avatar, nickname, status, is_deleted,
+        last_login_time, last_login_ip, create_time, update_time
+    </sql>
+
+    <!-- 公共筛选条件：分页查询和 count 共用同一份，避免两处维护不一致 -->
+    <sql id="userWhere">
+        <where>
+            <!-- 手写SQL不会触发MP的@TableLogic，逻辑删除必须自己过滤 -->
+            is_deleted = 0
+            <if test="dto.phone != null and dto.phone != ''">
+                AND phone = #{dto.phone}
+            </if>
+            <if test="dto.status != null">
+                AND status = #{dto.status}
+            </if>
+        </where>
+    </sql>
+
+    <!-- Offset 分页查询，先过滤再分页 -->
+    <select id="selectUserPageOffset"
+            resultType="org.example.bs_lingxin.member.user.entity.User">
+        SELECT
+        <include refid="userCommonColumn"/>
+        FROM `user`
+        <include refid="userWhere"/>
+        ORDER BY id ASC
+        LIMIT #{offset}, #{dto.size}
+    </select>
+
+    <!-- 查询筛选后的总条数，条件与分页查询完全一致 -->
+    <select id="selectUserCount" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM `user`
+        <include refid="userWhere"/>
+    </select>
+
+</mapper>

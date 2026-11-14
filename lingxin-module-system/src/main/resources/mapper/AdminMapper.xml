@@ -3,9 +3,9 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.example.bs_lingxin.system.admin.mapper.AdminMapper">
 
-    <!-- 定义公共字段片段 -->
+    <!-- 定义公共字段片段：不含 password，列表/单条查询接口不返回密码哈希 -->
     <sql id="adminCommonColumn">
-        id, username, password, real_name, phone, email, avatar,
+        id, username, real_name, phone, email, avatar,
     status, is_deleted, last_login_time, last_login_ip,
     create_time, update_time, role_id
     </sql>

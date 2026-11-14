@@ -1,21 +1,30 @@
 package org.example.bs_lingxin.member.merchant.controller;
 
+import cn.dev33.satoken.stp.SaLoginModel;
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.example.bs_lingxin.common.Result;
-import org.example.bs_lingxin.common.annotation.OperationRecord;
-import org.example.bs_lingxin.common.enums.ResultCode;
+import org.example.bs_lingxin.common.constant.LoginDevice;
 import org.example.bs_lingxin.member.merchant.dto.MerchantLoginDTO;
 import org.example.bs_lingxin.member.merchant.dto.MerchantPageQueryDTO;
+import org.example.bs_lingxin.member.merchant.dto.MerchantProfileDTO;
 import org.example.bs_lingxin.member.merchant.dto.MerchantSaveDTO;
 import org.example.bs_lingxin.member.merchant.entity.Merchant;
 import org.example.bs_lingxin.member.merchant.mapper.MerchantMapper;
 import org.example.bs_lingxin.member.merchant.service.MerchantService;
 import org.example.bs_lingxin.member.merchant.vo.MerchantLoginVO;
+import org.example.bs_lingxin.member.merchant.vo.MerchantVO;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -44,27 +53,22 @@ public class MerchantController {
     /**
      * 商家登录
      * */
+    @PostMapping("/login")
     public Result<?> login(@Valid @RequestBody MerchantLoginDTO merchantLoginDTO){
         Merchant merchant = merchantService.login(merchantLoginDTO);
-        if (merchant == null){
-            log.warn("商家登录失败，输入用户名={}，原因：数据库查询为空",
-                    merchantLoginDTO.getUsername());
-            return Result.fail(ResultCode.UNAUTHORIZED, "用户名或密码错误");
-        }
         log.info("商家登录成功，userId={},username={}",merchant.getId(),merchant.getUsername());
-        StpUtil.login(merchant.getId());
+        StpUtil.login(merchant.getId(), new SaLoginModel().setDevice(LoginDevice.MERCHANT));
         SaTokenInfo tokenInfo = StpUtil.getTokenInfo();
         MerchantLoginVO merchantLoginVO = new MerchantLoginVO(merchant,tokenInfo);
         String redisKey = "merchant:online:" + tokenInfo.getTokenValue();
-        String json;
         try {
-            json = jsonMapper.writeValueAsString(merchantLoginVO);
+            String json = jsonMapper.writeValueAsString(merchantLoginVO);
+            stringRedisTemplate.opsForValue().set(redisKey,json,tokenInfo.getTokenTimeout(), TimeUnit.SECONDS);
         }catch (JacksonException e){
-            log.error("序列化在线商家VO失败", e);
-            return Result.fail(ResultCode.INTERNAL_SERVER_ERROR, "登录异常");
+            // 缓存写失败不影响登录，token 已经下发
+            log.warn("在线商家缓存写入失败，merchantId={}", merchant.getId(), e);
         }
-        stringRedisTemplate.opsForValue().set(redisKey,json,tokenInfo.getTokenTimeout(), TimeUnit.SECONDS);
-        return Result.success(new MerchantLoginVO(merchant,tokenInfo));
+        return Result.success(merchantLoginVO);
     }
 
     /**
@@ -80,6 +84,40 @@ public class MerchantController {
     }
 
     /**
+     * 查询当前登录商家（id 从 token 解析）
+     * */
+    @GetMapping("/info")
+    public Result<?> info(){
+        Long merchantId = StpUtil.getLoginIdAsLong();
+        // 必须转 VO：实体带 password 哈希，不能直接返回
+        return Result.success(new MerchantVO(merchantService.selectId(merchantId)));
+    }
+
+    /**
+     * 商家修改自身资料（id 从 token 解析，改不了别人）
+     * */
+    @PutMapping("/profile")
+    public Result<?> updateProfile(@Valid @RequestBody MerchantProfileDTO merchantProfileDTO){
+        Long merchantId = StpUtil.getLoginIdAsLong();
+        merchantService.updateProfile(merchantId, merchantProfileDTO);
+        log.info("商家修改资料成功，merchantId={}", merchantId);
+        return Result.success();
+    }
+
+    /**
+     * 商家注销自己的账号（逻辑删除，id 从 token 解析）
+     * */
+    @DeleteMapping("/profile")
+    public Result<?> deleteSelf(){
+        Long merchantId = StpUtil.getLoginIdAsLong();
+        merchantService.delect(merchantId);
+        stringRedisTemplate.delete("merchant:online:" + StpUtil.getTokenValue());
+        StpUtil.logout();
+        log.info("商家注销成功，merchantId={}", merchantId);
+        return Result.success();
+    }
+
+    /**
      * 分页查询商家
      * */
     @GetMapping("/page")
@@ -87,18 +125,12 @@ public class MerchantController {
         List<Merchant> merchants = merchantService.selectpage(merchantPageQueryDTO);
         Long total = merchantMapper.selectMerchantCount(merchantPageQueryDTO);
         long pages = 0L;
-        if(total != 0){
+        if(total != null && total != 0){
             pages = total % merchantPageQueryDTO.getSize() == 0 ? total / merchantPageQueryDTO.getSize() : total / merchantPageQueryDTO.getSize() + 1;
-        }
-        if (merchants == null){
-            return Result.fail(ResultCode.INTERNAL_SERVER_ERROR, "查询商家列表失败");
-        }
-        if (total == 0){
-            return Result.fail(ResultCode.BAD_REQUEST, "暂无数据");
         }
         Map<String,Object> map = new HashMap<>();
         map.put("records", merchants);
-        map.put("total", total);
+        map.put("total", total == null ? 0L : total);
         map.put("pages", pages);
         map.put("current", merchantPageQueryDTO.getCurrent());
         map.put("size", merchantPageQueryDTO.getSize());
@@ -106,68 +138,48 @@ public class MerchantController {
     }
 
     /**
-     * 查询单个商家
-     * */
-    @GetMapping("/{id}")
-    public Result<?> selectId(Long id){
-        if (id == null || id<=0){
-            return Result.fail(ResultCode.BAD_REQUEST, "商家ID不正确");
-        }
-        Merchant merchant = merchantService.selectId(id);
-        if (merchant == null){
-            return Result.fail(ResultCode.NOT_FOUND, "商家不存在");
-        }
-        return Result.success(merchant);
-    }
-
-    /**
      * 根据账号精确查询商家
      * */
     @GetMapping("/getByUsername")
     public Result<?> selectOne(@Valid MerchantPageQueryDTO merchantPageQueryDTO){
-        if (merchantPageQueryDTO == null){
-            return Result.fail(ResultCode.BAD_REQUEST, "用户名为空");
-        }
         Merchant merchant = merchantService.selectName(merchantPageQueryDTO);
-        if (merchant == null){
-            return Result.fail(ResultCode.NOT_FOUND, "商家不存在");
-        }
-        return Result.success(merchant);
+        return Result.success(new MerchantVO(merchant));
     }
 
     /**
      * 新增商家
      * */
     @PostMapping("/add")
-    public Result<?> add(@Valid MerchantSaveDTO merchantSaveDTO){
-        if (merchantSaveDTO  == null){
-            return Result.fail(ResultCode.BAD_REQUEST, "请求参数不能为空");
-        }
+    public Result<?> add(@Valid @RequestBody MerchantSaveDTO merchantSaveDTO){
         merchantService.add(merchantSaveDTO);
         return Result.success();
     }
 
     /**
-     *修改商家
+     * 超管：按ID查询商家详情
      * */
-    @PutMapping("/{id}")
-    public Result<?> update(@Valid MerchantSaveDTO merchantSaveDTO){
-        if (merchantSaveDTO == null){
-            return Result.fail(ResultCode.BAD_REQUEST, "请求参数不能为空");
-        }
-        merchantService.update(merchantSaveDTO);
+    @GetMapping("/{id:\\d+}")
+    public Result<?> selectById(@PathVariable("id") Long id){
+        return Result.success(new MerchantVO(merchantService.selectId(id)));
+    }
+
+    /**
+     * 超管：按ID修改商家
+     * */
+    @PutMapping("/{id:\\d+}")
+    public Result<?> updateById(@PathVariable("id") Long id,@Valid @RequestBody MerchantSaveDTO merchantSaveDTO){
+        merchantService.updateAdmin(id, merchantSaveDTO);
+        log.info("超管修改商家成功，merchantId={}", id);
         return Result.success();
     }
 
     /**
-     *逻辑删除商家
+     * 超管：按ID逻辑删除商家
      * */
-    @DeleteMapping("/{id}")
-    public Result<?> delete(@PathVariable Long id){
-        if (id == null){
-            return Result.fail(ResultCode.BAD_REQUEST, "商家ID不能为空");
-        }
+    @DeleteMapping("/{id:\\d+}")
+    public Result<?> deleteById(@PathVariable("id") Long id){
         merchantService.delect(id);
+        log.info("超管删除商家成功，merchantId={}", id);
         return Result.success();
     }
 }
