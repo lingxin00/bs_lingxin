@@ -108,7 +108,6 @@ public class MerchantServiceImpl implements MerchantService {
      * */
     @Override
     public void add(MerchantSaveDTO merchantSaveDTO) {
-        // password 的 @NotBlank 已去掉（超管改资料时可留空），这里补回新增场景的必填校验
         if (!StringUtils.hasText(merchantSaveDTO.getPassword())){
             throw new BusinessException("密码不能为空", 400);
         }
